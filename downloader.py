@@ -39,7 +39,7 @@ async def handle_message(event: VkBotEvent, downloader_api: VkApiMethod, uploade
         downloader_api.messages.send(user_id = id, message = text, random_id = 0)
 
     if id != 559888974 and id != 507016336:
-        return answer(f"You are not availible to post your id: {id} \n please contact @travertin35")
+        return answer(f"You are not availible to post your id: {id} \n please contact [vk.com/travetin35|@travertin35]")
     
 
     text = message.get("text")
