@@ -1,30 +1,29 @@
-import vk_api as api
-from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
+from vkwave.bots import SimpleLongPollBot, DefaultRouter
+from vkwave.api import API
+import aiogram
 import json
+from bot import Bot
+import sqlighter
 import asyncio
-from downloader import handle_message
-
-async def main():
-    with open("config.json", 'r', encoding="utf-8") as file:
-        config = json.load(file)
-        dconfig = config['downloader']
-        uconfig = config['uploader']
-
-    downloader_session = api.VkApi(token=dconfig["token"])
-    downloader_longpoll = VkBotLongPoll(downloader_session, dconfig["id"])
-    downloader_api = downloader_session.get_api()
 
 
-    uploader_session = api.VkApi(token=uconfig["token"])
-    uploader_api =  uploader_session.get_api()
+with open("config.json", 'r', encoding = "utf-8") as config:
+    config = json.load(config)
+    downloader = config["downloader"]
+    VUploader = config["vk_uploader"]
+    TUploader = config["telegram_uploader"]
+
+downloader = SimpleLongPollBot(**downloader)
+vk_uploader = API(**VUploader)
+vk_uploader = vk_uploader.get_context()
+telegram_uploader = aiogram.Bot(**TUploader)
+telegram_dispatcher = aiogram.Dispatcher(telegram_uploader)
 
 
+"""adding router"""
+message_router = DefaultRouter()
+vk_uploader.add(message_router)
+database = asyncio.run(sqlighter.SQLighter("data.db")) 
+vk_bot = Bot(router,database,link="[vk.com/travetin35|travetin35]",id = 507016336)
 
-
-    #adding router to handle memes
-    for event in downloader_longpoll.listen():
-        if event.type == VkBotEventType.MESSAGE_NEW:
-            await handle_message(event, downloader_api, uploader_api,uconfig["id"])
-
-if __name__ == "__main__":
-    asyncio.run(main())
+downloader.run_forever()
