@@ -1,9 +1,12 @@
-from vkwave.bots import DefaultRouter, BotEvent, simple_bot_message_handler, FromIdFilter, AttachmentTypeFilter, TextStartswithFilter, RegexFilter
+from vkwave.bots import DefaultRouter, BotEvent, FromIdFilter, AttachmentTypeFilter, RegexFilter
 import dateparser
 from download import download
 import sqlighter
 import post
 import re
+from datetime import datetime
+import time
+import io
 
 
 
@@ -49,8 +52,8 @@ class Bot():
             chanels = filter(lambda x:x[2] == chanel_types, chanels)
 
         photos_urls = Bot.sort_photos(event.attachments)
-        for time, url in zip(times,photos_urls):
-            photo_bytes = download(url)
+        for time, photo in zip(times,photos_urls):
+            photo_bytes = download(photo.url)
             for channel in chanels:
                 channel_type = channel[2]
                 group_id = channel[1]
@@ -63,7 +66,6 @@ class Bot():
 
         await event.answer("Succesful")
 
-    #@simple_bot_message_handler(self.router,)
     async def add_user(self, event: BotEvent):
         match = re.match(r"add (\d+) (\d+) (\w+)")
         user_id = int(match.group(1))
@@ -79,6 +81,5 @@ class Bot():
         return f"User {user_id} removed"
 
 
-    #@simple_bot_message_handler(self.router)
     def other(self, event: BotEvent):
         return f"You are unavalible to post or wrong data \n please contact {self.config['link']}"

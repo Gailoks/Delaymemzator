@@ -1,29 +1,35 @@
-from vkwave.bots import SimpleLongPollBot, DefaultRouter
-from vkwave.api import API
-import aiogram
 import json
-from bot import Bot
-import sqlighter
+import abstractions
+import bots.vk.vkinteraction as vk
+import bots.vk.dbcontext as vkdb
 import asyncio
+import dev
 
+async def main():
+    with open("config.json", 'r', encoding = "utf-8") as config:
+        config = json.load(config)
 
-with open("config.json", 'r', encoding = "utf-8") as config:
-    config = json.load(config)
-    downloader = config["downloader"]
-    VUploader = config["vk_uploader"]
-    TUploader = config["telegram_uploader"]
+    #vkdb_context = vkdb.SQLiteDBContext()
+    #await vkdb_context.connect(**config["vk-source"]["database"]["sqlite"])
 
-downloader = SimpleLongPollBot(**downloader)
-vk_uploader = API(**VUploader)
-vk_uploader = vk_uploader.get_context()
-telegram_uploader = aiogram.Bot(**TUploader)
-telegram_dispatcher = aiogram.Dispatcher(telegram_uploader)
+    bot = vk.VkSourceBot(**config["vk-source"]["bot"])
+    sources: list[abstractions.MemeSource] = [
+        bot
+    ]
 
+    intakes: dict[str, abstractions.MemeIntake] = {
+        "vk": dev.DevIntake('pseudo-vk', 'ok'),
+        "tg": dev.DevIntake('pseudo-tg', 'fail'),
+        "ds": dev.DevIntake('pseudo-ds', 'fail'),
+        "dev": dev.DevIntake('dev', 'invalid')
+    }
 
-"""adding router"""
-message_router = DefaultRouter()
-vk_uploader.add(message_router)
-database = asyncio.run(sqlighter.SQLighter("data.db")) 
-vk_bot = Bot(router,database,link="[vk.com/travetin35|travetin35]",id = 507016336)
+    main_router = abstractions.MemeRouter(sources, intakes)
+    main_router.initialize()
 
-downloader.run_forever()
+    bot.initialize()
+    await bot.mainloop()
+    while True:
+        await asyncio.sleep(100000)
+
+asyncio.run(main())
