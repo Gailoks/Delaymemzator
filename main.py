@@ -9,14 +9,14 @@ async def main():
     with open("config.json", 'r', encoding = "utf-8") as config:
         config = json.load(config)
 
-    #vkdb_context = vkdb.SQLiteDBContext()
-    #await vkdb_context.connect(**config["vk-source"]["database"]["sqlite"])
+    vkdb_context = vkdb.SQLiteDBContext()
+    await vkdb_context.connect(**config["vk-source"]["database"]["sqlite"])
 
     bot = vk.VkSourceBot(**config["vk-source"]["bot"])
     sources: list[abstractions.MemeSource] = [
         bot
     ]
-
+ 
     intakes: dict[str, abstractions.MemeIntake] = {
         "vk": dev.DevIntake('pseudo-vk', 'ok'),
         "tg": dev.DevIntake('pseudo-tg', 'fail'),
@@ -28,8 +28,9 @@ async def main():
     main_router.initialize()
 
     bot.initialize()
-    await bot.mainloop()
-    while True:
-        await asyncio.sleep(100000)
+    await bot.run()
 
-asyncio.run(main())
+
+loop = asyncio.get_event_loop()
+loop.create_task(main())
+loop.run_forever()

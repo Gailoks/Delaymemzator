@@ -22,7 +22,7 @@ class VkSourceBot(abstractions.MemeSource):
     def set_router(self, router: abstractions.MemeRouter) -> None:
         self.__router = router
 
-    async def mainloop(self):
+    async def run(self):
         await self.__downloader_long_pool.run() # TODO: fix
 
     async def __schedule_meme(self, event: BotEvent):
