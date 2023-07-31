@@ -4,32 +4,38 @@ import bots.vk.vkinteraction as vk
 import bots.vk.dbcontext as vkdb
 import asyncio
 import dev
+import bots.telegram.telegraminteractions as tg
+import bots.telegram.dbcontext as tgdb
 
 async def main():
     with open("config.json", 'r', encoding = "utf-8") as config:
         config = json.load(config)
 
-    #vkdb_context = vkdb.SQLiteDBContext()
-    #await vkdb_context.connect(**config["vk-source"]["database"]["sqlite"])
-
-    bot = vk.VkSourceBot(**config["vk-source"]["bot"])
+    vk_source_bot = vk.VkSourceBot(**config["vk-source"]["bot"])
     sources: list[abstractions.MemeSource] = [
-        bot
+        vk_source_bot
     ]
 
+    vkdb_context = vkdb.SQLiteDBContext()
+    await vkdb_context.connect(**config["vk-intake"]["database"]["sqlite"])
+    vk_intake_bot = vk.VkIntakeBot(**config["vk-intake"]["bot"], db = vkdb_context)
+
+    tgdb_context = tgdb.SQLiteDBContext()
+    await tgdb_context.connect(**config["telegram-intake"]["database"]["sqlite"])
+    telegam_intake_bot = tg.TelegramIntakeBot(**config["telegram-intake"]["bot"], db = tgdb_context)
+
     intakes: dict[str, abstractions.MemeIntake] = {
-        "vk": dev.DevIntake('pseudo-vk', 'ok'),
-        "tg": dev.DevIntake('pseudo-tg', 'fail'),
-        "ds": dev.DevIntake('pseudo-ds', 'fail'),
-        "dev": dev.DevIntake('dev', 'invalid')
+        "вк": vk_intake_bot,
+        "vk": vk_intake_bot,
+        "tg": telegam_intake_bot,
+        "тг": telegam_intake_bot
     }
 
     main_router = abstractions.MemeRouter(sources, intakes)
     main_router.initialize()
 
-    bot.initialize()
-    await bot.mainloop()
-    while True:
-        await asyncio.sleep(100000)
+    await vk_source_bot.run()
 
-asyncio.run(main())
+loop = asyncio.get_event_loop()
+loop.create_task(main())
+loop.run_forever()

@@ -26,7 +26,7 @@ class DBContext(ABC):
         pass
 
 class SQLiteDBContext(DBContext):
-    TABLE_NAME = "VkGroups"
+    TABLE_NAME = "TelegramGroups"
 
     connection: aiosqlite.Connection
 
