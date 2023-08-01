@@ -1,6 +1,7 @@
 import json
 import models
 import abstractions
+import router
 import bots.vk.vkinteraction as vk
 import bots.vk.dbcontext as vkdb
 import asyncio
@@ -38,7 +39,7 @@ async def main():
         # "тг": telegam_intake_bot
     }
 
-    main_router = abstractions.MemeRouter(sources, intakes, logger_factory.create_logger("Router"))
+    main_router = router.MemeRouter(sources, intakes, logger_factory.create_logger("router.MemeRouter"))
     main_router.initialize()
 
     await vk_source_bot.run()

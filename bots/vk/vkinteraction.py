@@ -15,7 +15,7 @@ from vkwave.client import AIOHTTPClient
 
 
 class VkSourceBot(abstractions.MemeSource):
-    __router: abstractions.MemeRouter = None
+    __router: abstractions.AbstractMemeRouter = None
 
 
     def __init__(self, **config):
@@ -26,7 +26,7 @@ class VkSourceBot(abstractions.MemeSource):
 
         
         
-    def set_router(self, router: abstractions.MemeRouter) -> None:
+    def set_router(self, router: abstractions.AbstractMemeRouter) -> None:
         self.__router = router
 
     async def run(self):
