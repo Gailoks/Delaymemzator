@@ -42,6 +42,8 @@ async def main():
     main_router = router.MemeRouter(sources, intakes, logger_factory.create_logger("router.MemeRouter"))
     main_router.initialize()
 
+    await main_router.route_memes(507016336, ["vk"], [models.Meme(dateparser.parse("завтра"), "https://images.unsplash.com/photo-1481349518771-20055b2a7b24?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8cmFuZG9tfGVufDB8fDB8fHww&w=1000&q=80")])
+
     await vk_source_bot.run()
 
 loop = asyncio.get_event_loop()
