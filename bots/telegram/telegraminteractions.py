@@ -1,10 +1,8 @@
 import abstractions
 import models
 from .dbcontext import DBContext
-import dateparser
 import re
-from datetime import datetime, timedelta
-import time
+from datetime import datetime
 import requests
 import io 
 import aiogram
@@ -26,7 +24,8 @@ class TelegramIntakeBot(abstractions.MemeIntake):
 
         user = await self.__db.get_user(sender_id)
         photo = TelegramIntakeBot.__download(meme.url)
-        await asyncio.sleep(meme.datetime.timestamp())
+        time_delta = meme.datetime-datetime.now()
+        await asyncio.sleep(time_delta.total_seconds())
         await self.__bot.send_photo(chat_id=user.group_id,photo=photo)
 
     async def validate_upload(self, sender_id: int, meme: models.Meme):

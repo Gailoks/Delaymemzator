@@ -38,11 +38,12 @@ class VkSourceBot(abstractions.MemeSource):
 
     async def __schedule_meme(self, event: BotEvent):
         message = event.object.object.message
-        msg_text = message.text
+        msg_text = message.text.lower() #lower chars
         attachments = message.attachments
 
         primary_match = re.match(r"((\w)+, ?)*(\w)+( .+)", msg_text)
         if not primary_match or primary_match.group(0) != msg_text:
+            print(event)
             return "Invalid input format, see help"
         
         raw_dates = primary_match.group(4)
@@ -82,7 +83,7 @@ class VkSourceBot(abstractions.MemeSource):
 
         walls = filter(lambda x: x.type.value == 'wall', attachments)
         
-        for wall_photo_urls in map(lambda x: VkSourceBot.__eject_meme_urls(x.attachments), walls):
+        for wall_photo_urls in map(lambda x: VkSourceBot.__eject_meme_urls(x.wall.attachments), walls):
             result += wall_photo_urls
 
         return result
