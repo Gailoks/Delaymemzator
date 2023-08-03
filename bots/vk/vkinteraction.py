@@ -1,3 +1,4 @@
+from typing import Awaitable
 from vkwave.bots import SimpleLongPollBot, DefaultRouter, BotEvent, AttachmentTypeFilter, TextStartswithFilter, WallPhotoUploader
 from vkwave.api import APIOptionsRequestContext,API
 import abstractions
@@ -14,7 +15,7 @@ from vkwave.client import AIOHTTPClient
 
 
 class VkSourceBot(abstractions.MemeSource):
-    __router: abstractions.MemeRouter = None
+    __router: abstractions.AbstractMemeRouter = None
 
 
     def __init__(self, **config):
@@ -25,7 +26,7 @@ class VkSourceBot(abstractions.MemeSource):
 
         
         
-    def set_router(self, router: abstractions.MemeRouter) -> None:
+    def set_router(self, router: abstractions.AbstractMemeRouter) -> None:
         self.__router = router
 
     async def run(self):
@@ -66,11 +67,8 @@ class VkSourceBot(abstractions.MemeSource):
                 meme_dates.append(date)
         
         memes = map(lambda x: models.Meme(x[0], x[1]), zip(meme_dates, meme_urls))
-        status_codes: list[str] = []
-        for meme in memes:
-            status_codes.append(await self.__router.route_meme(message.from_id, targets, meme))
 
-        return "Send finished: \n" + "\n".join(map(lambda x: f"[{x[0] + 1}]: {x[1]}", enumerate(status_codes)))
+        return "Send finished:\n" + await self.__router.route_memes(message.from_id, targets, memes)
 
 
     @staticmethod
@@ -106,7 +104,7 @@ class VkIntakeBot(abstractions.MemeIntake):
 
     async def upload_meme(self, sender_id:int, meme:models.Meme):
 
-        async def upload_photo(group_id, photo_link):
+        async def upload_photo(group_id, photo_link) -> Awaitable[None]:
             photo = VkIntakeBot.__download(photo_link)
             return await self.__uploader.get_attachment_from_io(photo, group_id,"jpg")
         
@@ -114,8 +112,13 @@ class VkIntakeBot(abstractions.MemeIntake):
         photo_link = await upload_photo(user.group_id, meme.url)
         await self.__api.wall.post(owner_id =  user.group_id, attachments = photo_link, publish_date = time.mktime(meme.datetime.timetuple()))
 
-    async def validate_upload(self, sender_id: int, meme: models.Meme):
+    async def validate_user(self, sender_id: int) -> Awaitable[str | None]:
         users = await self.__db.get_users() 
         if sender_id not in users:
-            raise Exception("You are not availible to post, contact Admin")
+            return "You are not availible to post, contact Admin"
+        else:
+            return None
+
+    async def validate_upload(self, sender_id: int, meme: models.Meme) -> Awaitable[str | None]:
+        return None
     
