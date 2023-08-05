@@ -100,4 +100,5 @@ class ConsoleLogger(Logger):
             message += f"\n\t\tException recived: {exception}"
 
         print(message)
+
         

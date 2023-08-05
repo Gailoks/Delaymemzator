@@ -28,21 +28,19 @@ async def main():
     await vkdb_context.connect(**config["vk-intake"]["database"]["sqlite"])
     vk_intake_bot = vk.VkIntakeBot(**config["vk-intake"]["bot"], db = vkdb_context)
 
-    # tgdb_context = tgdb.SQLiteDBContext()
-    # await tgdb_context.connect(**config["telegram-intake"]["database"]["sqlite"])
-    # telegam_intake_bot = tg.TelegramIntakeBot(**config["telegram-intake"]["bot"], db = tgdb_context)
+    tgdb_context = tgdb.SQLiteDBContext()
+    await tgdb_context.connect(**config["telegram-intake"]["database"]["sqlite"])
+    telegam_intake_bot = tg.TelegramIntakeBot(**config["telegram-intake"]["bot"], db = tgdb_context)
 
     intakes: dict[str, abstractions.MemeIntake] = {
         "вк": vk_intake_bot,
         "vk": vk_intake_bot,
-        # "tg": telegam_intake_bot,
-        # "тг": telegam_intake_bot
+        "tg": telegam_intake_bot,
+        "тг": telegam_intake_bot
     }
 
     main_router = router.MemeRouter(sources, intakes, logger_factory.create_logger("router.MemeRouter"))
     main_router.initialize()
-
-    await main_router.route_memes(507016336, ["vk"], [models.Meme(dateparser.parse("завтра"), "https://images.unsplash.com/photo-1481349518771-20055b2a7b24?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8cmFuZG9tfGVufDB8fDB8fHww&w=1000&q=80")])
 
     await vk_source_bot.run()
 

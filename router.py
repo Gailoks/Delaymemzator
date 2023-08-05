@@ -15,7 +15,8 @@ class MemeRouter(AbstractMemeRouter):
         routing_result = await self.__route_meme_internal(sender_id, addresses, memes)
         self.__logger.log(LogLevel.INFORMATION, LogEvent(11, "MemeRouted"),
             "Memes from {SenderId} that contains {MemeCount} memes routed to {Addresses} with result {RoutingResult}",
-            [sender_id, len(memes), addresses, routing_result])
+            [sender_id, len(list(memes)), addresses, routing_result])
+        return "Finished"
 
 
     async def __route_meme_internal(self, sender_id: int, addresses: list[str], memes: list[models.Meme]) -> Awaitable[str]:
@@ -59,4 +60,4 @@ class MemeRouter(AbstractMemeRouter):
             return '\n'.join(map(lambda x: f"[{x[0]}]: {x[1]}", enumerate(meme_codes)))
         
         except Exception as ex:
-            return f"Fatal exception in meme routing process, please contact with developers to fix it error. Error text:\n{ex}"
+            return f"Fatal exception in meme routing process, please contact with developers to fix this error. Error text:\n{ex}"
